@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#00ff9c">
+<meta name="description" content="КПК Военной Полиции | Live Russia">
+<title>КПК Военной Полиции v2.0 | Live Russia</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Consolas','Courier New',monospace; }
+  body {
+    background:#0a0e14;
+    color:#00ff9c;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(0,255,156,0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(0,150,255,0.05) 0%, transparent 50%);
+  }
+
+  /* ===== ЭКРАН ВХОДА ===== */
+  .login-screen {
+    width:100%;
+    max-width:420px;
+    background:#0d131c;
+    border:2px solid #00ff9c;
+    border-radius:16px;
+    padding:35px 30px;
+    box-shadow:0 0 30px rgba(0,255,156,0.3);
+    text-align:center;
+    animation:fade 0.5s;
+  }
+  .login-screen h1 {
+    font-size:1.3rem;
+    letter-spacing:3px;
+    margin-bottom:10px;
+    text-shadow:0 0 10px #00ff9c;
+  }
+  .login-screen .sub {
+    font-size:0.7rem;
+    color:#4a8a6a;
+    letter-spacing:2px;
+    margin-bottom:25px;
+  }
+  .login-screen .lock-icon {
+    font-size:2.5rem;
+    margin-bottom:15px;
+    text-shadow:0 0 20px #00ff9c;
+  }
+  .login-screen input {
+    width:100%;
+    background:#0a1018;
+    border:1px solid #1a3d2c;
+    color:#00ff9c;
+    padding:12px 15px;
+    border-radius:6px;
+    font-family:inherit;
+    font-size:1rem;
+    text-align:center;
+    letter-spacing:3px;
+    outline:none;
+    margin-bottom:15px;
+    transition:all 0.2s;
+  }
+  .login-screen input:focus {
+    border-color:#00ff9c;
+    box-shadow:0 0 15px rgba(0,255,156,0.4);
+  }
+  .login-screen .err {
+    color:#ff3b3b;
+    font-size:0.75rem;
+    margin-bottom:15px;
+    min-height:18px;
+    letter-spacing:1px;
+  }
+  .login-screen .hint {
+    font-size:0.65rem;
+    color:#4a8a6a;
+    margin-top:20px;
+    letter-spacing:1px;
+  }
+
+  /* ===== КПК ===== */
+  .kpk {
+    width:100%;
+    max-width:1000px;
+    background:#0d131c;
+    border:2px solid #00ff9c;
+    border-radius:16px;
+    box-shadow:0 0 30px rgba(0,255,156,0.3), inset 0 0 40px rgba(0,255,156,0.05);
+    overflow:hidden;
+    position:relative;
+    display:none;
+  }
+  .kpk::before {
+    content:'';
+    position:absolute;
+    top:0; left:0; right:0;
+    height:2px;
+    background:linear-gradient(90deg, transparent, #00ff9c, transparent);
+    animation:scan 4s linear infinite;
+    pointer-events:none;
+    z-index:10;
+  }
+  @keyframes scan {
+    0% { transform:translateY(0); }
+    100% { transform:translateY(700px); }
+  }
+  @keyframes fade { from { opacity:0; transform:translateY(5px);} to {opacity:1;transform:translateY(0);} }
+
+  .header {
+    background:linear-gradient(135deg, #001a10, #003322);
+    padding:15px 20px;
+    border-bottom:2px solid #00ff9c;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .header h1 {
+    font-size:1.1rem;
+    letter-spacing:2px;
+    text-shadow:0 0 10px #00ff9c;
+  }
+  .header .status {
+    font-size:0.75rem;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .dot {
+    width:8px; height:8px;
+    background:#00ff9c;
+    border-radius:50%;
+    box-shadow:0 0 8px #00ff9c;
+    animation:blink 1.5s infinite;
+  }
+  @keyframes blink { 50% { opacity:0.3; } }
+  .logout {
+    background:transparent;
+    border:1px solid #ff3b3b;
+    color:#ff3b3b;
+    padding:5px 12px;
+    border-radius:5px;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:0.7rem;
+    letter-spacing:1px;
+    transition:all 0.2s;
+  }
+  .logout:hover { background:#ff3b3b; color:#0a0e14; }
+
+  .tabs {
+    display:flex;
+    background:#0a1018;
+    border-bottom:1px solid #1a3d2c;
+    overflow-x:auto;
+  }
+  .tab {
+    padding:12px 16px;
+    cursor:pointer;
+    color:#4a8a6a;
+    font-size:0.8rem;
+    letter-spacing:1px;
+    border-bottom:2px solid transparent;
+    transition:all 0.2s;
+    white-space:nowrap;
+    user-select:none;
+  }
+  .tab:hover { color:#00ff9c; background:#0f1a24; }
+  .tab.active {
+    color:#00ff9c;
+    border-bottom-color:#00ff9c;
+    background:#0f1a24;
+    text-shadow:0 0 8px #00ff9c;
+  }
+
+  .content { padding:20px; min-height:450px; max-height:75vh; overflow-y:auto; }
+  .page { display:none; animation:fade 0.3s; }
+  .page.active { display:block; }
+
+  .field { margin-bottom:15px; }
+  .field label {
+    display:block;
+    font-size:0.75rem;
+    color:#4a8a6a;
+    margin-bottom:5px;
+    letter-spacing:1px;
+  }
+  .field input, .field textarea, .field select {
+    width:100%;
+    background:#0a1018;
+    border:1px solid #1a3d2c;
+    color:#00ff9c;
+    padding:10px 12px;
+    border-radius:6px;
+    font-family:inherit;
+    font-size:0.9rem;
+    outline:none;
+    transition:all 0.2s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color:#00ff9c;
+    box-shadow:0 0 10px rgba(0,255,156,0.3);
+  }
+  .field textarea { resize:vertical; min-height:80px; }
+  .field input[type="search"] { letter-spacing:1px; }
+
+  .btn {
+    background:transparent;
+    border:1px solid #00ff9c;
+    color:#00ff9c;
+    padding:10px 18px;
+    border-radius:6px;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:0.8rem;
+    letter-spacing:1px;
+    transition:all 0.2s;
+    text-transform:uppercase;
+  }
+  .btn:hover {
+    background:#00ff9c;
+    color:#0a0e14;
+    box-shadow:0 0 15px rgba(0,255,156,0.5);
+  }
+  .btn.danger { border-color:#ff3b3b; color:#ff3b3b; }
+  .btn.danger:hover { background:#ff3b3b; color:#0a0e14; box-shadow:0 0 15px rgba(255,59,59,0.5); }
+  .btn.warn { border-color:#ffaa00; color:#ffaa00; }
+  .btn.warn:hover { background:#ffaa00; color:#0a0e14; }
+  .btn-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:15px; }
+
+  .record {
+    background:#0a1018;
+    border-left:3px solid #00ff9c;
+    padding:12px 15px;
+    margin-bottom:10px;
+    border-radius:6px;
+    font-size:0.85rem;
+    position:relative;
+  }
+  .record .meta {
+    color:#4a8a6a;
+    font-size:0.7rem;
+    margin-bottom:5px;
+    letter-spacing:1px;
+  }
+  .record .title { color:#00ff9c; font-weight:bold; margin-bottom:3px; }
+  .record .actions {
+    position:absolute;
+    top:10px;
+    right:10px;
+    display:flex;
+    gap:5px;
+  }
+  .record .act {
+    cursor:pointer;
+    font-size:0.65rem;
+    padding:3px 8px;
+    border-radius:4px;
+    border:1px solid;
+    letter-spacing:1px;
+  }
+  .record .act.edit { color:#ffaa00; border-color:#ffaa00; }
+  .record .act.edit:hover { background:#ffaa00; color:#0a0e14; }
+  .record .act.del { color:#ff3b3b; border-color:#ff3b3b; }
+  .record .act.del:hover { background:#ff3b3b; color:#0a0e14; }
+
+  .empty { color:#4a8a6a; text-align:center; padding:40px 20px; font-size:0.85rem; letter-spacing:1px; }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:15px; }
+  @media (max-width:700px) { .grid2, .grid3 { grid-template-columns:1fr; } }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-bottom:20px; }
+  .stat {
+    background:#0a1018;
+    border:1px solid #1a3d2c;
+    border-radius:8px;
+    padding:15px 10px;
+    text-align:center;
+  }
+  .stat .num { font-size:1.6rem; color:#00ff9c; text-shadow:0 0 10px #00ff9c; }
+  .stat .lbl { font-size:0.65rem; color:#4a8a6a; letter-spacing:1px; margin-top:5px; }
+
+  .footer {
+    background:#0a1018;
+    padding:10px 20px;
+    border-top:1px solid #1a3d2c;
+    font-size:0.7rem;
+    color:#4a8a6a;
+    display:flex;
+    justify-content:space-between;
+    letter-spacing:1px;
+  }
+
+  .search-bar {
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+    align-items:center;
+  }
+  .search-bar input { flex:1; }
+
+  .badge {
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:10px;
+    font-size:0.65rem;
+    letter-spacing:1px;
+    margin-left:5px;
+  }
+  .badge.clean { background:#003322; color:#00ff9c; border:1px solid #00ff9c; }
+  .badge.warn { background:#332200; color:#ffaa00; border:1px solid #ffaa00; }
+  .badge.danger { background:#330000; color:#ff3b3b; border:1px solid #ff3b3b; }
+
+  .orient-card {
+    background:#0a1018;
+    border:1px solid #1a3d2c;
+    border-left:4px solid #ff3b3b;
+    border-radius:8px;
+    padding:15px;
+    margin-bottom:12px;
+    font-size:0.85rem;
+  }
+  .orient-card .head {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .orient-card .head .name { color:#ff3b3b; font-weight:bold; font-size:1rem; }
+  .orient-card .head .priority {
+    padding:3px 10px;
+    border-radius:10px;
+    font-size:0.65rem;
+    letter-spacing:1px;
+  }
+  .priority.high { background:#ff3b3b; color:#0a0e14; }
+  .priority.med { background:#ffaa00; color:#0a0e14; }
+  .priority.low { background:#4a8a6a; color:#0a0e14; }
+
+  .timeline {
+    border-left:2px solid #1a3d2c;
+    padding-left:15px;
+    margin-left:5px;
+  }
+  .timeline .tl-item {
+    position:relative;
+    padding-bottom:12px;
+    font-size:0.8rem;
+  }
+  .timeline .tl-item::before {
+    content:'';
+    position:absolute;
+    left:-22px;
+    top:5px;
+    width:10px;
+    height:10px;
+    background:#00ff9c;
+    border-radius:50%;
+    box-shadow:0 0 8px #00ff9c;
+  }
+  .timeline .tl-item.red::before { background:#ff3b3b; box-shadow:0 0 8px #ff3b3b; }
+  .timeline .tl-item.yellow::before { background:#ffaa00; box-shadow:0 0 8px #ffaa00; }
+  .timeline .tl-item .date { color:#4a8a6a; font-size:0.7rem; letter-spacing:1px; }
+  .timeline .tl-item .text { color:#00ff9c; margin-top:2px; }
+
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-track { background:#0a1018; }
+  ::-webkit-scrollbar-thumb { background:#1a3d2c; border-radius:4px; }
+  ::-webkit-scrollbar-thumb:hover { background:#00ff9c; }
+
+  @media print {
+    body { background:#fff; color:#000; padding:0; }
+    .header, .tabs, .footer, .btn, .logout, .actions { display:none !important; }
+    .kpk { border:none; box-shadow:none; max-width:100%; }
+    .content { max-height:none; overflow:visible; padding:0; }
+    .record { border-left-color:#000; background:#fff; color:#000; page-break-inside:avoid; }
+    .record .title { color:#000; }
+    .record .meta { color:#555; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== ЭКРАН ВХОДА ===== -->
+<div class="login-screen" id="loginScreen">
+  <div class="lock-icon">🔐</div>
+  <h1>ВОЕННАЯ ПОЛИЦИЯ</h1>
+  <div class="sub">СИСТЕМА ЗАЩИЩЕНА | LIVE RUSSIA</div>
+  <input type="password" id="passInput" placeholder="• • • • • •" maxlength="20" autocomplete="off">
+  <div class="err" id="passErr"></div>
+  <button class="btn" style="width:100%;" onclick="tryLogin()">▸ ВОЙТИ В СИСТЕМУ</button>
+  <div class="hint">ПАРОЛЬ ПО УМОЛЧАНИЮ: <b style="color:#00ff9c;">1234</b> (сменить в настройках)</div>
+</div>
+
+<!-- ===== КПК ===== -->
+<div class="kpk" id="kpk">
+  <div class="header">
+    <h1>◈ КПК ВОЕННОЙ ПОЛИЦИИ v2.0 ◈</h1>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div class="status"><span class="dot"></span> ONLINE</div>
+      <button class="logout" onclick="logout()">ВЫХОД</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-page="dash">ГЛАВНАЯ</div>
+    <div class="tab" data-page="citizen">ПРОВЕРКА</div>
+    <div class="tab" data-page="dossier">ЛИЧНЫЕ ДЕЛА</div>
+    <div class="tab" data-page="protocol">ПРОТОКОЛ</div>
+    <div class="tab" data-page="wanted">РОЗЫСК</div>
+    <div class="tab" data-page="orient">ОРИЕНТИРОВКИ</div>
+    <div class="tab" data-page="journal">ЖУРНАЛ</div>
+    <div class="tab" data-page="archive">АРХИВ</div>
+    <div class="tab" data-page="notes">ЗАМЕТКИ</div>
+    <div class="tab" data-page="settings">НАСТРОЙКИ</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ГЛАВНАЯ -->
+    <div class="page active" id="dash">
+      <div class="stats">
+        <div class="stat"><div class="num" id="s-checks">0</div><div class="lbl">ПРОВЕРКИ</div></div>
+        <div class="stat"><div class="num" id="s-dossier">0</div><div class="lbl">ЛИЧНЫХ ДЕЛ</div></div>
+        <div class="stat"><div class="num" id="s-protocols">0</div><div class="lbl">ПРОТОКОЛЫ</div></div>
+        <div class="stat"><div class="num" id="s-wanted">0</div><div class="lbl">В РОЗЫСКЕ</div></div>
+        <div class="stat"><div class="num" id="s-orient">0</div><div class="lbl">ОРИЕНТИРОВКИ</div></div>
+        <div class="stat"><div class="num" id="s-journal">0</div><div class="lbl">ЖУРНАЛ</div></div>
+        <div class="stat"><div class="num" id="s-archive">0</div><div class="lbl">АРХИВ</div></div>
+        <div class="stat"><div class="num" id="s-notes">0</div><div class="lbl">ЗАМЕТКИ</div></div>
+      </div>
+      <div class="field">
+        <label>ОПЕРАТОР</label>
+        <input type="text" id="operator" placeholder="Ваше имя / звание">
+      </div>
+      <div class="record">
+        <div class="title">▸ СИСТЕМА ГОТОВА К РАБОТЕ</div>
+        <div class="meta">ВСЕ ДАННЫЕ СОХРАНЯЮТСЯ ЛОКАЛЬНО</div>
+        <div>Доступны: проверка, личные дела, протоколы, розыск, ориентировки, журнал, архив, заметки.</div>
+      </div>
+    </div>
+
+    <!-- ПРОВЕРКА -->
+    <div class="page" id="citizen">
+      <h3 style="margin-bottom:15px;letter-spacing:2px;font-size:0.9rem;">▸ ЭКСПРЕСС-ПРОВЕРКА</h3>
+      <div class="grid2">
+        <div class="field"><label>ФИО</label><input type="text" id="c-name" placeholder="Иванов Иван Иванович"></div>
+        <div class="field"><label>ДАТА РОЖДЕНИЯ</label><input type="text" id="c-dob" placeholder="01.01.1990"></div>
+        <div class="field"><label>ПАСПОРТ</label><input type="text" id="c-pass" placeholder="0000 000000"></div>
+        <div class="field"><label>ВОИНСКОЕ ЗВАНИЕ</label><input type="text" id="c-rank" placeholder="Рядовой / Сержант / ..."></div>
+        <div class="field"><label>ПОДРАЗДЕЛЕНИЕ</label><input type="text" id="c-unit" placeholder="В/Ч 00000"></div>
+        <div class="field"><label>СТАТУС</label>
+          <select id="c-status">
+            <option>ЧИСТ</option>
+            <option>НАРУШЕНИЯ</option>
+            <option>В РОЗЫСКЕ</option>
+            <option>ЗАДЕРЖАН</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>ПРИМЕЧАНИЯ</label><textarea id="c-notes" placeholder="Дополнительная информация..."></textarea></div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveCheck()">▸ СОХРАНИТЬ ПРОВЕРКУ</button>
+        <button class="btn danger" onclick="clearCheck()">✕ ОЧИСТИТЬ</button>
+      </div>
+      <h3 style="margin:20px 0 10px;letter-spacing:2px;font-size:0.8rem;color:#4a8a6a;">СОХРАНЁННЫЕ ПРОВЕРКИ</h3>
+      <div id="checks-list"></div>
+    </div>
+
+    <!-- ЛИЧНЫЕ ДЕЛА -->
+    <div class="page" id="dossier">
+      <h3 style="margin-bottom:15px;letter-spacing:2px;font-size:0.9rem;">▸ ЛИЧНЫЕ ДЕЛА ВОЕННОСЛУЖАЩИХ</h3>
+      <div class="grid3">
+        <div class="field"><label>ФИО</label><input type="text" id="d-name" placeholder="ФИО"></div>
+        <div class="field"><label>ЗВАНИЕ</label><input type="text" id="d-rank" placeholder="Воинское звание"></div>
+        <div class="field"><label>ДОЛЖНОСТЬ</label><input type="text" id="d-post" placeholder="Должность"></div>
+        <div class="field"><label>ПОДРАЗДЕЛЕНИЕ</label><input type="text" id="d-unit" placeholder="В/Ч 00000"></div>
+        <div class="field"><label>ДАТА РОЖДЕНИЯ</label><input type="text" id="d-dob" placeholder="01.01.1990"></div>
+        <div class="field"><label>ПАСПОРТ</label><input type="text" id="d-pass" placeholder="0000 000000"></div>
+        <div class="field"><label>ТЕЛЕФОН</label><input type="text" id="d-phone" placeholder="+7 000 000-00-00"></div>
+        <div class="field"><label>АДРЕС</label><input type="text" id="d-address" placeholder="г. Москва, ул. ..."></div>
+        <div class="field"><label>СТАТУС</label>
+          <select id="d-status">
+            <option>АКТИВЕН</option>
+            <option>НАРУШЕНИЯ</option>
+            <option>ПОД СЛЕДСТВИЕМ</option>
+            <option>УВОЛЕН</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>БИОГРАФИЯ / ПРИМЕЧАНИЯ</label><textarea id="d-bio" placeholder="Краткая биография, особенности..."></textarea></div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveDossier()">▸ СОЗДАТЬ ДЕЛО</button>
+        <button class="btn danger" onclick="clearDossier()">✕ ОЧИСТИТЬ</button>
+      </div>
+
+      <div class="search-bar" style="margin-top:20px;">
+        <input type="search" id="d-search" placeholder="🔍 Поиск по ФИО / званию / подразделению..." oninput="renderDossiers()">
+      </div>
+      <div id="dossier-list"></div>
+    </div>
+
+    <!-- ПРОТОКОЛ -->
+    <div class="page" id="protocol">
+      <h3 style="margin-bottom:15px;letter-spacing:2px;font-size:0.9rem;">▸ ОФОРМЛЕНИЕ ПРОТОКОЛА</h3>
+      <div class="grid2">
+        <div class="field"><label>НОМЕР ПРОТОКОЛА</label><input type="text" id="p-num" placeholder="ВП-0001"></div>
+        <div class="field"><label>ДАТА / ВРЕМЯ</label><input type="text" id="p-date" placeholder="01.01.2025 14:30"></div>
+        <div class="field"><label>ЗАДЕРЖАННЫЙ</label><input type="text" id="p-person" placeholder="ФИО"></div>
+        <div class="field"><label>СТАТЬЯ</label><input type="text" id="p-article" placeholder="Ст. УК / КоАП"></div>
+      </div>
+      <div class="field"><label>ОБСТОЯТЕЛЬСТВА</label><textarea id="p-desc" placeholder="Описание произошедшего..."></textarea></div>
+      <div class="field"><label>МЕРА ПРЕСЕЧЕНИЯ</label>
+        <select id="p-punish">
+          <option>ПРЕДУПРЕЖДЕНИЕ</option>
+          <option>ШТРАФ</option>
+          <option>АРЕСТ 15 СУТОК</option>
+          <option>АРЕСТ 30 СУТОК</option>
+          <option>УВОЛЬНЕНИЕ</option>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveProtocol()">▸ ЗАФИКСИРОВАТЬ</button>
+        <button class="btn danger" onclick="clearProtocol()">✕ ОЧИСТИТЬ</button>
+      </div>
+      <div id="protocols-list" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- РОЗЫСК -->
+    <div class="page" id="wanted">
+      <h3 style="margin-bottom:15px;letter-spacing:2px;font-size:0.9rem;">▸ БАЗА РОЗЫСКА</h3>
+      <div class="grid2">
+        <div class="field"><label>ФИО</label><input type="text" id="w-name" placeholder="ФИО подозреваемого"></div>
+        <div class="field"><label>ЗВАНИЕ</label><input type="text" id="w-rank" placeholder="Воинское звание"></div>
+        <div class="field"><label>СТАТЬЯ</label><input type="text" id="w-article" placeholder="Статья обвинения"></div>
+        <div class="field"><label>НАГРАДА</label><input type="text" id="w-reward" placeholder="Сумма за поимку"></div>
+      </div>
+      <div class="field"><label>ОПИСАНИЕ / ОСОБЫЕ ПРИМЕТЫ</label><textarea id="w-desc" placeholder="Описание внешности, особая примета..."></textarea></div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveWanted()">▸ ОБЪЯВИТЬ В РОЗЫСК</button>
+      </div>
+      <div id="wanted-list" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- ОРИЕНТИРОВКИ -->
+    <div class="page" id="orient">
+      <h3 style="margin-bottom:15px;letter-spacing:2px;font-size:0.9rem;">▸ ОРИЕНТИРОВКИ</h3>
+      <div class="grid2">
+        <div class="field"><label>ЗАГОЛОВОК</label><input type="text" id="o-title" placeholder="Например: Подозреваемый в дезертирстве"></div>
+        <div class="field"><label>ПРИОРИТЕТ</label>
+          <select id="o-priority">
+            <option value="high">🔴 ВЫСОКИЙ</option>
+            <option value="med" selected>🟠 СРЕДНИЙ</option>
+            <option value="low">🟢 НИЗКИЙ</option>
+          </select>
+        </div>
+        <div class="field"><label>ФИО / ПРИМЕТЫ</label><input type="text" id="o-person" placeholder="ФИО или описание"></div>
+        <div class="field"><label>МЕСТО ПОСЛЕДНЕГО ПОЯВЛЕНИЯ</label><input type="text" id="o-location" placeholder="Район, адрес"></div>
+      </div>
+      <div class="field"><label>ТЕКСТ ОРИЕНТИРОВКИ</label><textarea id="o-text" placeholder="Что делать при обнаружении, детали..." style="min-height:100px;"></textarea></div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveOrient()">▸ ОПУБЛИКОВАТЬ</button>
+        <button class="btn danger" onclick="clearOrient()">✕ ОЧИСТИТЬ</button>
+      </div>
+      <div id="orient-list" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- ЖУРНАЛ -->
+    <div class="page" id="journal">
+      <h3 style="margin-bottom:15px;letter-spacing:2px;font-size:0.9rem;">▸ ЖУРНАЛ СОБЫТИЙ</h3>
+      <div class="record" style="border-left-color:#ffaa00;">
+        <div class="title" style="color:#ffaa00;">▸ АВТОМАТИЧЕСКАЯ ЗАПИСЬ</div>
+        <div class="meta">ВСЕ ДЕЙСТВИЯ ФИКСИРУЮТСЯ</div>
+        <div>Журнал ведётся автоматически при сохранении проверок, дел, протоколов, розыска и ориентировок. Можно добавлять ручные записи.</div>
+      </div>
+      <div class="grid2" style="margin-top:15px;">
+        <div class="field"><label>ТИП ЗАПИСИ</label>
+          <select id="j-type">
+            <option>ПАТРУЛЬ</option>
+            <option>ЗАДЕРЖАНИЕ</option>
+            <option>ПРОВЕРКА</option>
+            <option>ОПЕРАЦИЯ</option>
+            <option>СОБЫТИЕ</option>
+          </select>
+        </div>
+        <div class="field"><label>КРАТКОЕ ОПИСАНИЕ</label><input type="text" id="j-title" placeholder="Что произошло"></div>
+      </div>
+      <div class="field"><label>ПОДРОБНОСТИ</label><textarea id="j-text" placeholder="Детали события..."></textarea></div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveJournal()">▸ ДОБАВИТЬ ЗАПИСЬ</button>
+      </div>
+      <div class="search-bar" style="margin-top:20px;">
+        <input type="search" id="j-search" placeholder="🔍 Поиск по журналу..." oninput="renderJournal()">
+      </div>
+      <div id="journal-list"></div>
+    </div>
+
+    <!-- АРХИВ -->
+    <div class="page" id="archive">
+      <h3 style="margin-bottom:15px;letter-spacing:2px;font-size:0.9rem;">▸ АРХИВ ЗАВЕРШЁННЫХ ДЕЛ</h3>
+      <div class="record" style="border-left-color:#4a8a6a;">
+        <div class="title" style="color:#4a8a6a;">▸ АРХИВНОЕ ХРАНИЛИЩЕ</div>
+        <div class="meta">ЗАВЕРШЁННЫЕ ДЕЛА</div>
+        <div>Сюда переносятся закрытые дела из розыска и протоколов, либо добавляются вручную.</div>
+      </div>
+      <div class="grid2" style="margin-top:15px;">
+        <div class="field"><label>НОМЕР ДЕЛА</label><input type="text" id="a-num" placeholder="АРХ-0001"></div>
+        <div class="field"><label>ДАТА ЗАКРЫТИЯ</label><input type="text" id="a-date" placeholder="01.01.2025"></div>
+        <div class="field"><label>ФИО ФИГУРАНТА</label><input type="text" id="a-person" placeholder="ФИО"></div>
+        <div class="field"><label>РЕЗУЛЬТАТ</label>
+          <select id="a-result">
+            <option>ОСУЖДЁН</option>
+            <option>ОПРАВДАН</option>
+            <option>УВОЛЕН</option>
+            <option>ПЕРЕДАНО В СУД</option>
+            <option>ЗАКРЫТО</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>КРАТКОЕ СОДЕРЖАНИЕ</label><textarea id="a-text" placeholder="Итог дела..."></textarea></div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveArchive()">▸ В АРХИВ</button>
+      </div>
+      <div id="archive-list" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- ЗАМЕТКИ -->
+    <div class="page" id="notes">
+      <h3 style="margin-bottom:15px;letter-spacing:2px;font-size:0.9rem;">▸ ЛИЧНЫЕ ЗАМЕТКИ</h3>
+      <div class="field"><label>ЗАГОЛОВОК</label><input type="text" id="n-title" placeholder="Тема заметки"></div>
+      <div class="field"><label>ТЕКСТ</label><textarea id="n-text" placeholder="Содержание..." style="min-height:120px;"></textarea></div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveNote()">▸ СОХРАНИТЬ</button>
+      </div>
+      <div id="notes-list" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- НАСТРОЙКИ -->
+    <div class="page" id="settings">
+      <h3 style="margin-bottom:15px;letter-spacing:2px;font-size:0.9rem;">▸ НАСТРОЙКИ СИСТЕМЫ</h3>
+
+      <div class="record">
+        <div class="title">▸ СМЕНА ПАРОЛЯ</div>
+        <div class="meta">ЗАЩИТА ДОСТУПА</div>
+        <div class="grid2" style="margin-top:10px;">
+          <div class="field"><label>ТЕКУЩИЙ ПАРОЛЬ</label><input type="password" id="p-old" placeholder="••••"></div>
+          <div class="field"><label>НОВЫЙ ПАРОЛЬ</label><input type="password" id="p-new" placeholder="••••"></div>
+        </div>
+        <button class="btn" onclick="changePass()">▸ СМЕНИТЬ ПАРОЛЬ</button>
+      </div>
+
+      <div class="record" style="border-left-color:#ffaa00;">
+        <div class="title" style="color:#ffaa00;">▸ ЭКСПОРТ / ИМПОРТ ДАННЫХ</div>
+        <div class="meta">РЕЗЕРВНАЯ КОПИЯ</div>
+        <div class="btn-row">
+          <button class="btn warn" onclick="exportData()">⬇ ЭКСПОРТ В ФАЙЛ</button>
+          <button class="btn warn" onclick="document.getElementById('importFile').click()">⬆ ИМПОРТ ИЗ ФАЙЛА</button>
+          <input type="file" id="importFile" style="display:none;" accept=".json" onchange="importData(event)">
+        </div>
+      </div>
+
+      <div class="record" style="border-left-color:#ff3b3b;">
+        <div class="title" style="color:#ff3b3b;">▸ ОПАСНАЯ ЗОНА</div>
+        <div class="meta">НЕОБРАТИМЫЕ ДЕЙСТВИЯ</div>
+        <button class="btn danger" onclick="resetAll()">⚠ СБРОСИТЬ ВСЕ ДАННЫЕ</button>
+      </div>
+
+      <div class="record">
+        <div class="title">▸ ИНФОРМАЦИЯ</div>
+        <div class="meta">КПК ВОЕННОЙ ПОЛИЦИИ v2.0</div>
+        <div>Данные хранятся локально (localStorage). Сервер не используется.</div>
+        <div style="margin-top:5px;color:#4a8a6a;font-size:0.75rem;">
+          <a href="https://github.com/ТВОЙ_НИК/kpk-mvd" target="_blank" style="color:#00ff9c;">GitHub репозиторий</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>СИСТЕМА ВОЕННОЙ ПОЛИЦИИ | LIVE RUSSIA</span>
+    <span id="clock">--:--:--</span>
+  </div>
+</div>
+
+<script>
+// ===== ПАРОЛЬ =====
+const DEFAULT_PASS = '1234';
+const PASS_KEY = 'kpk_password';
+const SESSION_KEY = 'kpk_session';
+
+function getPass() { return localStorage.getItem(PASS_KEY) || DEFAULT_PASS; }
+
+function tryLogin() {
+  const input = document.getElementById('passInput').value;
+  const err = document.getElementById('passErr');
+  if (input === getPass()) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('kpk').style.display = 'block';
+    document.getElementById('passInput').value = '';
+    err.textContent = '';
+    logEvent('СИСТЕМА', 'Авторизация оператора', 'Вход в систему выполнен');
+    renderAll();
+  } else {
+    err.textContent = '✕ НЕВЕРНЫЙ ПАРОЛЬ';
+    document.getElementById('passInput').value = '';
+    setTimeout(() => err.textContent = '', 2000);
+  }
+}
+document.getElementById('passInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') tryLogin();
+});
+
+function logout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('kpk').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'block';
+}
+
+function changePass() {
+  const oldP = document.getElementById('p-old').value;
+  const newP = document.getElementById('p-new').value;
+  if (oldP !== getPass()) return alert('Неверный текущий пароль');
+  if (newP.length < 3) return alert('Пароль минимум 3 символа');
+  localStorage.setItem(PASS_KEY, newP);
+  document.getElementById('p-old').value = '';
+  document.getElementById('p-new').value = '';
+  alert('Пароль изменён');
+  logEvent('СИСТЕМА', 'Смена пароля', 'Пароль доступа изменён');
+}
+
+// ===== НАВИГАЦИЯ =====
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.page).classList.add('active');
+    renderAll();
+  });
+});
+
+// ===== ХРАНИЛИЩЕ =====
+const DB = {
+  get: (k) => JSON.parse(localStorage.getItem('kpk_'+k) || '[]'),
+  set: (k, v) => localStorage.setItem('kpk_'+k, JSON.stringify(v)),
+  push: (k, v) => { const a = DB.get(k); a.unshift(v); DB.set(k, a); },
+  del: (k, i) => { const a = DB.get(k); a.splice(i,1); DB.set(k, a); },
+  update: (k, i, v) => { const a = DB.get(k); a[i] = v; DB.set(k, a); }
+};
+
+// ===== ЖУРНАЛ (авто) =====
+function logEvent(type, title, text) {
+  DB.push('journal', {
+    type, title, text,
+    auto: true,
+    time: new Date().toLocaleString('ru-RU')
+  });
+}
+
+// ===== ПРОВЕРКИ =====
+function saveCheck() {
+  const name = document.getElementById('c-name').value.trim();
+  if (!name) return alert('Введите ФИО');
+  DB.push('checks', {
+    name,
+    dob: document.getElementById('c-dob').value,
+    pass: document.getElementById('c-pass').value,
+    rank: document.getElementById('c-rank').value,
+    unit: document.getElementById('c-unit').value,
+    status: document.getElementById('c-status').value,
+    notes: document.getElementById('c-notes').value,
+    time: new Date().toLocaleString('ru-RU')
+  });
+  logEvent('ПРОВЕРКА', 'Проверка: ' + name, 'Статус: ' + document.getElementById('c-status').value);
+  clearCheck(); renderAll();
+}
+function clearCheck() {
+  ['c-name','c-dob','c-pass','c-rank','c-unit','c-notes'].forEach(id => document.getElementById(id).value='');
+}
+function renderChecks() {
+  const list = DB.get('checks');
+  const el = document.getElementById('checks-list');
+  if (!list.length) { el.innerHTML = '<div class="empty">НЕТ СОХРАНЁННЫХ ПРОВЕРОК</div>'; return; }
+  el.innerHTML = list.map((c,i) => {
+    const badge = c.status === 'ЧИСТ' ? 'clean' : (c.status === 'В РОЗЫСКЕ' ? 'danger' : 'warn');
+    return `
+    <div class="record">
+      <div class="actions">
+        <span class="act del" onclick="delItem('checks',${i})">УДАЛИТЬ</span>
+      </div>
+      <div class="title">${c.name} <span class="badge ${badge}">${c.status}</span></div>
+      <div class="meta">${c.time} | ПАСПОРТ: ${c.pass||'—'}</div>
+      <div>${c.rank||''} ${c.unit?'| '+c.unit:''} ${c.dob?'| ДР: '+c.dob:''}</div>
+      ${c.notes?'<div style="color:#4a8a6a;margin-top:5px;">'+c.notes+'</div>':''}
+    </div>`;
+  }).join('');
+}
+
+// ===== ЛИЧНЫЕ ДЕЛА =====
+function saveDossier() {
+  const name = document.getElementById('d-name').value.trim();
+  if (!name) return alert('Введите ФИО');
+  const d = {
+    name,
+    rank: document.getElementById('d-rank').value,
+    post: document.getElementById('d-post').value,
+    unit: document.getElementById('d-unit').value,
+    dob: document.getElementById('d-dob').value,
+    pass: document.getElementById('d-pass').value,
+    phone: document.getElementById('d-phone').value,
+    address: document.getElementById('d-address').value,
+    status: document.getElementById('d-status').value,
+    bio: document.getElementById('d-bio').value,
+    history: [],
+    time: new Date().toLocaleString('ru-RU')
+  };
+  d.history.push({ date: d.time, text: 'Личное дело создано', type: 'green' });
+  DB.push('dossier', d);
+  logEvent('СОБЫТИЕ', 'Создано личное дело: ' + name, 'Подразделение: ' + (d.unit||'—'));
+  clearDossier(); renderAll();
+}
+function clearDossier() {
+  ['d-name','d-rank','d-post','d-unit','d-dob','d-pass','d-phone','d-address','d-bio'].forEach(id => document.getElementById(id).value='');
+}
+function renderDossiers() {
+  const list = DB.get('dossier');
+  const q = (document.getElementById('d-search')?.value || '').toLowerCase();
+  const el = document.getElementById('dossier-list');
+  const filtered = list.filter(d =>
+    !q || d.name.toLowerCase().includes(q) ||
+    (d.rank||'').toLowerCase().includes(q) ||
+    (d.unit||'').toLowerCase().includes(q) ||
+    (d.post||'').toLowerCase().includes(q)
+  );
+  if (!filtered.length) { el.innerHTML = '<div class="empty">ЛИЧНЫХ ДЕЛ НЕ НАЙДЕНО</div>'; return; }
+  el.innerHTML = filtered.map((d) => {
+    const i = list.indexOf(d);
+    const badge = d.status === 'АКТИВЕН' ? 'clean' : (d.status === 'УВОЛЕН' ? 'danger' : 'warn');
+    return `
+    <div class="record">
+      <div class="actions">
+        <span class="act edit" onclick="editDossier(${i})">ОТКРЫТЬ</span>
+        <span class="act edit" onclick="addHistory(${i})">+ЗАПИСЬ</span>
+        <span class="act del" onclick="delItem('dossier',${i})">УДАЛИТЬ</span>
+      </div>
+      <div class="title">${d.name} <span class="badge ${badge}">${d.status}</span></div>
+      <div class="meta">${d.rank||'—'} | ${d.post||'—'} | ${d.unit||'—'}</div>
+      <div style="color:#4a8a6a;font-size:0.75rem;">ДР: ${d.dob||'—'} | ПАСПОРТ: ${d.pass||'—'}</div>
+      <div style="color:#4a8a6a;font-size:0.75rem;">ТЕЛ: ${d.phone||'—'} | АДРЕС: ${d.address||'—'}</div>
+      ${d.bio?'<div style="margin-top:5px;">'+d.bio+'</div>':''}
+      ${d.history && d.history.length ? `
+        <div style="margin-top:10px;"><b style="color:#4a8a6a;font-size:0.7rem;">ИСТОРИЯ:</b>
+        <div class="timeline" style="margin-top:8px;">
+          ${d.history.map(h => `<div class="tl-item ${h.type||''}"><div class="date">${h.date}</div><div class="text">${h.text}</div></div>`).join('')}
+        </div></div>` : ''}
+    </div>`;
+  }).join('');
+}
+function editDossier(i) {
+  const d = DB.get('dossier')[i];
+  document.getElementById('d-name').value = d.name || '';
+  document.getElementById('d-rank').value = d.rank || '';
+  document.getElementById('d-post').value = d.post || '';
+  document.getElementById('d-unit').value = d.unit || '';
+  document.getElementById('d-dob').value = d.dob || '';
+  document.getElementById('d-pass').value = d.pass || '';
+  document.getElementById('d-phone').value = d.phone || '';
+  document.getElementById('d-address').value = d.address || '';
+  document.getElementById('d-status').value = d.status || 'АКТИВЕН';
+  document.getElementById('d-bio').value = d.bio || '';
+  window._editDossierIndex = i;
+  alert('Дело загружено в форму. Измените и нажмите «СОЗДАТЬ ДЕЛО» для сохранения как новое, либо очистите.');
+}
+function addHistory(i) {
+  const text = prompt('Введите запись в историю дела:');
+  if (!text) return;
+  const list = DB.get('dossier');
+  const d = list[i];
+  if (!d.history) d.history = [];
+  const type = prompt('Тип (green/yellow/red):', 'green') || 'green';
+  d.history.push({ date: new Date().toLocaleString('ru-RU'), text, type });
+  DB.set('dossier', list);
+  logEvent('СОБЫТИЕ', 'Запись в дело: ' + d.name, text);
+  renderAll();
+}
+
+// ===== ПРОТОКОЛЫ =====
+function saveProtocol() {
+  const num = document.getElementById('p-num').value.trim();
+  if (!num) return alert('Введите номер протокола');
+  DB.push('protocols', {
+    num,
+    date: document.getElementById('p-date').value,
+    person: document.getElementById('p-person').value,
+    article: document.getElementById('p-article').value,
+    desc: document.getElementById('p-desc').value,
+    punish: document.getElementById('p-punish').value,
+    time: new Date().toLocaleString('ru-RU')
+  });
+  logEvent('ЗАДЕРЖАНИЕ', 'Протокол № ' + num, 'Лицо: ' + document.getElementById('p-person').value);
+  clearProtocol(); renderAll();
+}
+function clearProtocol() {
+  ['p-num','p-date','p-person','p-article','p-desc'].forEach(id => document.getElementById(id).value='');
+}
+function renderProtocols() {
+  const list = DB.get('protocols');
+  const el = document.getElementById('protocols-list');
+  if (!list.length) { el.innerHTML = '<div class="empty">НЕТ ПРОТОКОЛОВ</div>'; return; }
+  el.innerHTML = list.map((p,i) => `
+    <div class="record">
+      <div class="actions">
+        <span class="act edit" onclick="printRecord('protocols',${i})">🖨</span>
+        <span class="act edit" onclick="toArchive('protocols',${i})">В АРХИВ</span>
+        <span class="act del" onclick="delItem('protocols',${i})">УДАЛИТЬ</span>
+      </div>
+      <div class="title">№ ${p.num} — ${p.person||'БЕЗ ФИО'}</div>
+      <div class="meta">${p.date||p.time} | СТАТЬЯ: ${p.article||'—'} | МЕРА: ${p.punish}</div>
+      ${p.desc?'<div style="color:#4a8a6a;margin-top:5px;">'+p.desc+'</div>':''}
+    </div>
+  `).join('');
+}
+
+// ===== РОЗЫСК =====
+function saveWanted() {
+  const name = document.getElementById('w-name').value.trim();
+  if (!name) return alert('Введите ФИО');
+  DB.push('wanted', {
+    name,
+    rank: document.getElementById('w-rank').value,
+    article: document.getElementById('w-article').value,
+    reward: document.getElementById('w-reward').value,
+    desc: document.getElementById('w-desc').value,
+    time: new Date().toLocaleString('ru-RU')
+  });
+  logEvent('СОБЫТИЕ', 'В розыск: ' + name, 'Статья: ' + document.getElementById('w-article').value);
+  ['w-name','w-rank','w-article','w-reward','w-desc'].forEach(id => document.getElementById(id).value='');
+  renderAll();
+}
+function renderWanted() {
+  const list = DB.get('wanted');
+  const el = document.getElementById('wanted-list');
+  if (!list.length) { el.innerHTML = '<div class="empty">РОЗЫСК ПУСТ</div>'; return; }
+  el.innerHTML = list.map((w,i) => `
+    <div class="record" style="border-left-color:#ff3b3b;">
+      <div class="actions">
+        <span class="act edit" onclick="toArchive('wanted',${i})">В АРХИВ</span>
+        <span class="act del" onclick="delItem('wanted',${i})">СНЯТЬ</span>
+      </div>
+      <div class="title" style="color:#ff3b3b;">⚠ ${w.name}</div>
+      <div class="meta">${w.time} | ЗВАНИЕ: ${w.rank||'—'} | СТАТЬЯ: ${w.article||'—'}</div>
+      ${w.reward?'<div style="color:#ffaa00;">НАГРАДА: '+w.reward+'</div>':''}
+      ${w.desc?'<div style="color:#4a8a6a;margin-top:5px;">'+w.desc+'</div>':''}
+    </div>
+  `).join('');
+}
+
+// ===== ОРИЕНТИРОВКИ =====
+function saveOrient() {
+  const title = document.getElementById('o-title').value.trim();
+  if (!title) return alert('Введите заголовок');
+  DB.push('orient', {
+    title,
+    priority: document.getElementById('o-priority').value,
+    person: document.getElementById('o-person').value,
+    location: document.getElementById('o-location').value,
+    text: document.getElementById('o-text').value,
+    time: new Date().toLocaleString('ru-RU')
+  });
+  logEvent('СОБЫТИЕ', 'Ориентировка: ' + title, 'Приоритет: ' + document.getElementById('o-priority').value);
+  clearOrient(); renderAll();
+}
+function clearOrient() {
+  ['o-title','o-person','o-location','o-text'].forEach(id => document.getElementById(id).value='');
+}
+function renderOrient() {
+  const list = DB.get('orient');
+  const el = document.getElementById('orient-list');
+  if (!list.length) { el.innerHTML = '<div class="empty">НЕТ ОРИЕНТИРОВОК</div>'; return; }
+  el.innerHTML = list.map((o,i) => {
+    const pLabel = o.priority === 'high' ? '🔴 ВЫСОКИЙ' : o.priority === 'med' ? '🟠 СРЕДНИЙ' : '🟢 НИЗКИЙ';
+    return `
+    <div class="orient-card">
+      <div class="head">
+        <div>
+          <div class="name">${o.title}</div>
+          <div class="meta" style="color:#4a8a6a;font-size:0.7rem;">${o.time}</div>
+        </div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <span class="priority ${o.priority}">${pLabel}</span>
+          <span class="act del" style="cursor:pointer;color:#ff3b3b;border:1px solid #ff3b3b;padding:3px 8px;border-radius:4px;font-size:0.65rem;" onclick="delItem('orient',${i})">УДАЛИТЬ</span>
+        </div>
+      </div>
+      ${o.person?'<div><b style="color:#4a8a6a;">ФИО/ПРИМЕТЫ:</b> '+o.person+'</div>':''}
+      ${o.location?'<div><b style="color:#4a8a6a;">МЕСТО:</b> '+o.location+'</div>':''}
+      ${o.text?'<div style="margin-top:5px;color:#00ff9c;">'+o.text+'</div>':''}
+    </div>`;
+  }).join('');
+}
+
+// ===== ЖУРНАЛ =====
+function saveJournal() {
+  const title = document.getElementById('j-title').value.trim();
+  if (!title) return alert('Введите описание');
+  DB.push('journal', {
+    type: document.getElementById('j-type').value,
+    title,
+    text: document.getElementById('j-text').value,
+    auto: false,
+    time: new Date().toLocaleString('ru-RU')
+  });
+  document.getElementById('j-title').value = '';
+  document.getElementById('j-text').value = '';
+  renderAll();
+}
+function renderJournal() {
+  const list = DB.get('journal');
+  const q = (document.getElementById('j-search')?.value || '').toLowerCase();
+  const el = document.getElementById('journal-list');
+  const filtered = list.filter(j =>
+    !q || (j.title||'').toLowerCase().includes(q) ||
+    (j.text||'').toLowerCase().includes(q) ||
+    (j.type||'').toLowerCase().includes(q)
+  );
+  if (!filtered.length) { el.innerHTML = '<div class="empty">ЖУРНАЛ ПУСТ</div>'; return; }
+  el.innerHTML = filtered.map((j) => {
+    const i = list.indexOf(j);
+    return `
+    <div class="record" style="border-left-color:${j.auto?'#ffaa00':'#00ff9c'};">
+      <div class="actions">
+        <span class="act del" onclick="delItem('journal',${i})">УДАЛИТЬ</span>
+      </div>
+      <div class="title">[${j.type}] ${j.title} ${j.auto?'<span class="badge warn">АВТО</span>':''}</div>
+      <div class="meta">${j.time}</div>
+      ${j.text?'<div style="color:#4a8a6a;">'+j.text+'</div>':''}
+    </div>`;
+  }).join('');
+}
+
+// ===== АРХИВ =====
+function saveArchive() {
+  const num = document.getElementById('a-num').value.trim();
+  if (!num) return alert('Введите номер дела');
+  DB.push('archive', {
+    num,
+    date: document.getElementById('a-date').value || new Date().toLocaleDateString('ru-RU'),
+    person: document.getElementById('a-person').value,
+    result: document.getElementById('a-result').value,
+    text: document.getElementById('a-text').value,
+    time: new Date().toLocaleString('ru-RU')
+  });
+  logEvent('СОБЫТИЕ', 'В архив: ' + num, 'Фигурант: ' + document.getElementById('a-person').value);
+  ['a-num','a-date','a-person','a-text'].forEach(id => document.getElementById(id).value='');
+  renderAll();
+}
+function renderArchive() {
+  const list = DB.get('archive');
+  const el = document.getElementById('archive-list');
+  if (!list.length) { el.innerHTML = '<div class="empty">АРХИВ ПУСТ</div>'; return; }
+  el.innerHTML = list.map((a,i) => `
+    <div class="record" style="border-left-color:#4a8a6a;">
+      <div class="actions">
+        <span class="act del" onclick="delItem('archive',${i})">УДАЛИТЬ</span>
+      </div>
+      <div class="title">${a.num} — ${a.person||'—'}</div>
+      <div class="meta">ЗАКРЫТО: ${a.date} | РЕЗУЛЬТАТ: ${a.result}</div>
+      ${a.text?'<div style="color:#4a8a6a;margin-top:5px;">'+a.text+'</div>':''}
+    </div>
+  `).join('');
+}
+function toArchive(key, i) {
+  const item = DB.get(key)[i];
+  const num = prompt('Номер архивного дела:', 'АРХ-' + Date.now().toString().slice(-4));
+  if (!num) return;
+  DB.push('archive', {
+    num,
+    date: new Date().toLocaleDateString('ru-RU'),
+    person: item.name || item.person || '—',
+    result: 'ЗАКРЫТО',
+    text: item.desc || item.text || 'Перенесено из ' + key,
+    time: new Date().toLocaleString('ru-RU')
+  });
+  DB.del(key, i);
+  logEvent('СОБЫТИЕ', 'Дело в архив: ' + num, 'Из раздела: ' + key);
+  renderAll();
+  alert('Дело перенесено в архив');
+}
+
+// ===== ЗАМЕТКИ =====
+function saveNote() {
+  const title = document.getElementById('n-title').value.trim();
+  if (!title) return alert('Введите заголовок');
+  DB.push('notes', {
+    title,
+    text: document.getElementById('n-text').value,
+    time: new Date().toLocaleString('ru-RU')
+  });
+  ['n-title','n-text'].forEach(id => document.getElementById(id).value='');
+  renderAll();
+}
+function renderNotes() {
+  const list = DB.get('notes');
+  const el = document.getElementById('notes-list');
+  if (!list.length) { el.innerHTML = '<div class="empty">НЕТ ЗАМЕТОК</div>'; return; }
+  el.innerHTML = list.map((n,i) => `
+    <div class="record">
+      <div class="actions">
+        <span class="act del" onclick="delItem('notes',${i})">УДАЛИТЬ</span>
+      </div>
+      <div class="title">${n.title}</div>
+      <div class="meta">${n.time}</div>
+      <div style="white-space:pre-wrap;margin-top:5px;">${n.text}</div>
+    </div>
+  `).join('');
+}
+
+// ===== ПЕЧАТЬ =====
+function printRecord(key, i) {
+  const item = DB.get(key)[i];
+  if (!item) return;
+  const w = window.open('', '_blank', 'width=800,height=900');
+  w.document.write(`
+    <html><head><title>Печать</title>
+    <style>
+      body { font-family: 'Times New Roman', serif; padding:40px; color:#000; }
+      h1 { text-align:center; font-size:1.4rem; margin-bottom:20px; letter-spacing:2px; }
+      .sub { text-align:center; font-size:0.9rem; color:#555; margin-bottom:30px; }
+      .row { margin-bottom:10px; }
+      .lbl { font-weight:bold; display:inline-block; min-width:150px; }
+      .block { margin-top:20px; padding:15px; border:1px solid #ccc; }
+      .footer { margin-top:50px; display:flex; justify-content:space-between; }
+      hr { border:none; border-top:1px solid #000; margin:20px 0; }
+    </style></head><body>
+      <h1>ПРОТОКОЛ № ${item.num || '—'}</h1>
+      <div class="sub">Военная Полиция | Live Russia</div>
+      <hr>
+      <div class="row"><span class="lbl">Дата/время:</span>${item.date || item.time || '—'}</div>
+      <div class="row"><span class="lbl">Задержанный:</span>${item.person || '—'}</div>
+      <div class="row"><span class="lbl">Статья:</span>${item.article || '—'}</div>
+      <div class="row"><span class="lbl">Мера пресечения:</span>${item.punish || '—'}</div>
+      <div class="block">
+        <div class="lbl">Обстоятельства:</div>
+        <div style="margin-top:10px;">${item.desc || '—'}</div>
+      </div>
+      <div class="footer">
+        <div>Составил: ________________</div>
+        <div>Подпись: ________________</div>
+      </div>
+    </body></html>
+  `);
+  w.document.close();
+  setTimeout(() => w.print(), 300);
+}
+
+// ===== ОБЩЕЕ =====
+function delItem(key, i) {
+  if (!confirm('Удалить запись?')) return;
+  DB.del(key, i);
+  renderAll();
+}
+function resetAll() {
+  if (!confirm('ТОЧНО СБРОСИТЬ ВСЕ ДАННЫЕ? Это необратимо.')) return;
+  if (!confirm('Последнее предупреждение. Продолжить?')) return;
+  ['checks','dossier','protocols','wanted','orient','journal','archive','notes'].forEach(k => localStorage.removeItem('kpk_'+k));
+  renderAll();
+}
+
+// ===== ЭКСПОРТ / ИМПОРТ =====
+function exportData() {
+  const data = {};
+  ['checks','dossier','protocols','wanted','orient','journal','archive','notes'].forEach(k => data[k] = DB.get(k));
+  data._exported = new Date().toISOString();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'kpk_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!confirm('Импорт заменит текущие данные. Продолжить?')) return;
+      ['checks','dossier','protocols','wanted','orient','journal','archive','notes'].forEach(k => {
+        if (data[k]) DB.set(k, data[k]);
+      });
+      renderAll();
+      alert('Импорт выполнен');
+    } catch (err) { alert('Ошибка файла: ' + err.message); }
+  };
+  reader.readAsText(file);
+}
+
+// ===== РЕНДЕР ВСЕГО =====
+function renderAll() {
+  renderChecks(); renderDossiers(); renderProtocols(); renderWanted();
+  renderOrient(); renderJournal(); renderArchive(); renderNotes();
+  const counts = {
+    checks: DB.get('checks').length,
+    dossier: DB.get('dossier').length,
+    protocols: DB.get('protocols').length,
+    wanted: DB.get('wanted').length,
+    orient: DB.get('orient').length,
+    journal: DB.get('journal').length,
+    archive: DB.get('archive').length,
+    notes: DB.get('notes').length
+  };
+  document.getElementById('s-checks').textContent = counts.checks;
+  document.getElementById('s-dossier').textContent = counts.dossier;
+  document.getElementById('s-protocols').textContent = counts.protocols;
+  document.getElementById('s-wanted').textContent = counts.wanted;
+  document.getElementById('s-orient').textContent = counts.orient;
+  document.getElementById('s-journal').textContent = counts.journal;
+  document.getElementById('s-archive').textContent = counts.archive;
+  document.getElementById('s-notes').textContent = counts.notes;
+}
+
+// ===== ЧАСЫ =====
+setInterval(() => {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('ru-RU');
+}, 1000);
+
+// ===== ОПЕРАТОР =====
+const opInput = document.getElementById('operator');
+if (opInput) {
+  opInput.value = localStorage.getItem('kpk_operator') || '';
+  opInput.addEventListener('input', () => localStorage.setItem('kpk_operator', opInput.value));
+}
+
+// ===== СТАРТ =====
+if (sessionStorage.getItem(SESSION_KEY) === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('kpk').style.display = 'block';
+  renderAll();
+}
+</script>
+</body>
+</html>
